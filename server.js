@@ -72,11 +72,9 @@ app.delete("/api/expenses/:id", async (req, res) => {
     );
 
     if (result.rowCount === 0) {
-      // No row matched this id
       return res.status(404).json({ success: false, message: "Expense not found" });
     }
 
-    // Success – return the deleted row
     res.json({ success: true, deleted: result.rows[0] });
   } catch (err) {
     console.error("Postgres Error:", err.message);
