@@ -63,9 +63,12 @@ app.get("/api/expenses", async (req, res) => {
 app.delete("/api/expenses/:id", async (req, res) => {
   const { id } = req.params;
   try {
+    // Convert id to integer since Postgres expects numeric ID
+    const expenseId = parseInt(id);
+    
     const result = await pool.query(
       "DELETE FROM expenses WHERE id = $1 RETURNING *",
-      [id]
+      [expenseId]
     );
 
     if (result.rowCount === 0) {
