@@ -83,6 +83,44 @@ app.delete("/api/expenses/:id", async (req, res) => {
 });
 
 
+app.patch("/api/expenses/:id", async (req, res) => {
+  const { id } = req.params;
+  const fields = req.body; // fields to update from frontend
+
+  try {
+    if (Object.keys(fields).length === 0) {
+      return res.status(400).json({ error: "No fields provided for update" });
+    }
+
+    // Build SET clause dynamically
+    const setClause = Object.keys(fields)
+      .map((key, index) => `${key} = $${index + 1}`)
+      .join(", ");
+    const values = Object.values(fields);
+
+    // Final query
+    const query = `
+      UPDATE expenses 
+      SET ${setClause} 
+      WHERE id = $${values.length + 1} 
+      RETURNING *;
+    `;
+
+    const result = await pool.query(query, [...values, id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Expense not found" });
+    }
+
+    res.json(result.rows[0]); // return updated row
+  } catch (err) {
+    console.error("Error updating expense:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
 
 
 // Start server
